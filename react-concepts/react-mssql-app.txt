@@ -1,0 +1,129 @@
+1. Setting up ReactJS with MS SQL Server:
+
+Assuming you have Node.js and npm installed, follow these steps:
+
+Step 1: Create a new React app using Create React App.
+```
+npx create-react-app react-mssql-app
+cd react-mssql-app
+```
+
+Step 2: Install necessary dependencies.
+```
+npm install axios
+npm install mssql
+```
+
+Step 3: Create a new file called `dbconfig.js` in the src folder to configure the MS SQL Server connection.
+```javascript
+// src/dbconfig.js
+const config = {
+  user: 'your_username',
+  password: 'your_password',
+  server: 'your_server_name',
+  database: 'your_database_name',
+};
+
+module.exports = config;
+```
+
+2. Create simple CRUD operations:
+
+Step 1: Create a new file called `api.js` in the src folder to handle API requests to the server.
+```javascript
+// src/api.js
+import axios from 'axios';
+
+const API_URL = 'http://localhost:5000'; // Replace with your server URL
+
+export const fetchItems = () => axios.get(`${API_URL}/items`);
+export const createItem = (item) => axios.post(`${API_URL}/items`, item);
+export const updateItem = (id, item) => axios.put(`${API_URL}/items/${id}`, item);
+export const deleteItem = (id) => axios.delete(`${API_URL}/items/${id}`);
+```
+
+Step 2: Update the App component in the src/App.js file to demonstrate the CRUD operations.
+```javascript
+// src/App.js
+import React, { useState, useEffect } from 'react';
+import { fetchItems, createItem, updateItem, deleteItem } from './api';
+
+function App() {
+  const [items, setItems] = useState([]);
+  const [newItem, setNewItem] = useState('');
+
+  useEffect(() => {
+    fetchAllItems();
+  }, []);
+
+  const fetchAllItems = async () => {
+    try {
+      const response = await fetchItems();
+      setItems(response.data);
+    } catch (error) {
+      console.error('Error fetching items:', error);
+    }
+  };
+
+  const handleCreateItem = async () => {
+    try {
+      const newItemData = { name: newItem }; // Modify as per your schema
+      await createItem(newItemData);
+      setNewItem('');
+      fetchAllItems();
+    } catch (error) {
+      console.error('Error creating item:', error);
+    }
+  };
+
+  const handleUpdateItem = async (id, updatedItem) => {
+    try {
+      await updateItem(id, updatedItem);
+      fetchAllItems();
+    } catch (error) {
+      console.error('Error updating item:', error);
+    }
+  };
+
+  const handleDeleteItem = async (id) => {
+    try {
+      await deleteItem(id);
+      fetchAllItems();
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    }
+  };
+
+  return (
+    <div>
+      <h1>Items</h1>
+      <ul>
+        {items.map((item) => (
+          <li key={item.id}>
+            <input
+              type="text"
+              value={item.name}
+              onChange={(e) =>
+                handleUpdateItem(item.id, { name: e.target.value })
+              }
+            />
+            <button onClick={() => handleDeleteItem(item.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+      <input
+       
+
+ type="text"
+        value={newItem}
+        onChange={(e) => setNewItem(e.target.value)}
+      />
+      <button onClick={handleCreateItem}>Create</button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+That's it! Now you can run the React app using `npm start` and it will display a list of items fetched from the server. You can create new items, update existing items, and delete items using the provided form. Make sure you have a server set up to handle the API requests and connect to the MS SQL Server database.
